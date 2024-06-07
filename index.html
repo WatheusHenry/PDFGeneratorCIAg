@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construtor de PDF</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js"
+        integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/"
+        crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        input[type="file"] {
+            margin-top: 10px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Construtor de PDF com Imagem</h1>
+
+        <label for="nomeProjeto">Nome do Projeto:</label>
+        <input type="text" id="nomeProjeto" placeholder="Digite o nome do projeto"><br>
+
+        <label for="dataTicket">Data do Ticket:</label>
+        <input type="date" id="dataTicket"><br>
+
+        <label for="numeroTicket">Número do Ticket:</label>
+        <input type="text" id="numeroTicket" placeholder="Digite o número do ticket"><br>
+
+        <label for="dataConclusao">Data de Conclusão:</label>
+        <input type="date" id="dataConclusao"><br>
+
+        <label for="dataEntrega">Data de Entrega:</label>
+        <input type="date" id="dataEntrega"><br>
+
+        <label for="objetivosPrincipais">Objetivos Principais:</label>
+        <textarea id="objetivosPrincipais" placeholder="Digite os objetivos principais"></textarea><br>
+
+        <label for="resolucaoBug">Resolução de BUG:</label>
+        <textarea id="resolucaoBug" placeholder="Descreva a resolução do BUG"></textarea><br>
+
+        <label for="funcionalidades">Funcionalidades Implementadas:</label>
+        <textarea id="funcionalidades" placeholder="Descreva as funcionalidades implementadas"></textarea><br>
+
+        <label for="prints">Prints do Aplicativo:</label>
+        <input type="file" id="prints" multiple><br>
+
+        <label for="consideracoesFinais">Considerações Finais:</label>
+        <textarea id="consideracoesFinais" placeholder="Digite as considerações finais"></textarea><br>
+
+        <button onclick="gerarPDF()">Gerar PDF</button>
+    </div>
+
+    <script>
+        function gerarPDF() {
+            const nomeProjeto = document.getElementById("nomeProjeto").value;
+            const dataTicket = document.getElementById("dataTicket").value;
+            const numeroTicket = document.getElementById("numeroTicket").value;
+            const dataConclusao = document.getElementById("dataConclusao").value;
+            const dataEntrega = document.getElementById("dataEntrega").value;
+            const objetivosPrincipais = document.getElementById("objetivosPrincipais").value;
+            const resolucaoBug = document.getElementById("resolucaoBug").value;
+            const funcionalidades = document.getElementById("funcionalidades").value;
+            const consideracoesFinais = document.getElementById("consideracoesFinais").value;
+            const prints = document.getElementById("prints").files;
+
+            const doc = new jsPDF();
+
+            const img = new Image();
+            img.src = 'images.png'; // Insira o caminho da sua imagem aqui
+
+            img.onload = function () {
+                const width = 20;
+                const height = (img.height * width) / img.width;
+                const x = 10;
+                const y = 10;
+                const pageHeight = doc.internal.pageSize.height;
+                let currentHeight = 20;
+
+                function addText(text, x, y, lineHeight = 10) {
+                    const lines = doc.splitTextToSize(text, 180);
+                    for (let i = 0; i < lines.length; i++) {
+                        if (currentHeight + lineHeight > pageHeight) {
+                            doc.addPage();
+                            currentHeight = 20;
+                        }
+                        doc.text(lines[i], x, currentHeight);
+                        currentHeight += lineHeight;
+                    }
+                }
+
+                function addImage(imageData, x, y, width, height) {
+                    if (currentHeight + height > pageHeight) {
+                        doc.addPage();
+                        currentHeight = 20;
+                    }
+                    doc.addImage(imageData, 'JPEG', x, currentHeight, width, height);
+                    currentHeight += height + 10; // Add some padding below the image
+                }
+
+                doc.addImage(img, 'JPEG', x, y, width, height);
+                currentHeight += height;
+
+                doc.setFontStyle("bold");
+                doc.setFontSize(25);
+                doc.text("Documento de entrega de testes", 40, currentHeight);
+                currentHeight += 18;
+
+                doc.setFontSize(16);
+                doc.setFontStyle("bold");
+                doc.text("Informações do Projeto", 20, currentHeight);
+                currentHeight += 10;
+
+                doc.setFontSize(14);
+                doc.setFontStyle("normal");
+                addText(`• Nome do Projeto: ${nomeProjeto}`, 20, currentHeight);
+                addText(`• Data do Ticket: ${dataTicket}`, 20, currentHeight);
+                addText(`• Número do Ticket: ${numeroTicket}`, 20, currentHeight);
+                addText(`• Data de Conclusão: ${dataConclusao}`, 20, currentHeight);
+                addText(`• Data de Entrega: ${dataEntrega}`, 20, currentHeight);
+
+                doc.setFontSize(16);
+                doc.setFontStyle("bold");
+                addText("Resumo do Ticket", 20, currentHeight);
+
+                doc.setFontSize(14);
+                doc.setFontStyle("normal");
+                addText("• Objetivos Principais", 20, currentHeight);
+                addText(objetivosPrincipais, 25, currentHeight);
+
+                addText(`• Resolução de BUG no sistema KonectPasto, conforme definido no ticket ${numeroTicket}.`, 20, currentHeight);
+                addText(resolucaoBug, 25, currentHeight);
+
+                doc.setFontSize(14);
+                doc.setFontStyle("bold");
+                addText("• Funcionalidades Implementadas", 25, currentHeight);
+                doc.setFontSize(14);
+                doc.setFontStyle("normal");
+                addText(funcionalidades, 25, currentHeight);
+
+                 doc.setFontSize(14);
+                doc.setFontStyle("bold");
+                addText("Considerações Finais", 20, currentHeight);
+                doc.setFontSize(14);
+                doc.setFontStyle("normal");
+                addText(consideracoesFinais, 25, currentHeight);
+
+                doc.setFontSize(14);
+                doc.setFontStyle("bold");
+                addText("Prints do Aplicativo", 20, currentHeight);
+                doc.setFontSize(14);
+                doc.setFontStyle("normal");
+
+                if (prints.length > 0) {
+                    let imagesProcessed = 0;
+                    for (let i = 0; i < prints.length; i++) {
+                        const reader = new FileReader();
+                        reader.onload = function (event) {
+                            const imgData = event.target.result;
+                            addImage(imgData, 20, currentHeight, 180, 120);
+                            imagesProcessed++;
+                            if (imagesProcessed === prints.length) {
+                                doc.save("meu_pdf_com_imagem.pdf");
+                            }
+                        };
+                        reader.readAsDataURL(prints[i]);
+                    }
+                } else {
+                    doc.save("meu_pdf_com_imagem.pdf");
+                }
+
+               
+            };
+        }
+    </script>
+</body>
+
+</html>
